@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 
 export default function AdminPanel() {
-  const [templates, setTemplates] = useState([]);
-  const [newTitle, setNewTitle] = useState('');
-  const [err, setErr] = useState('');
+  const [templates, setTemplates] = useState([]); // lista szablonów
+  const [newTitle, setNewTitle] = useState('');   // nowy tytuł
+  const [err, setErr] = useState('');             // błąd
 
+  // pobierz szablony z serwera
   const fetchTemplates = () => {
     fetch('http://localhost:5000/api/tasks/templates')
       .then(res => res.json())
@@ -13,9 +14,10 @@ export default function AdminPanel() {
   };
 
   useEffect(() => {
-    fetchTemplates();
+    fetchTemplates(); // pobierz przy starcie
   }, []);
 
+  // dodaj nowy szablon
   const handleAdd = async e => {
     e.preventDefault();
     if (!newTitle.trim()) return;
@@ -34,6 +36,7 @@ export default function AdminPanel() {
     }
   };
 
+  // usuń szablon
   const handleDelete = async id => {
     try {
       await fetch(`http://localhost:5000/api/tasks/templates/${id}`, {
@@ -49,6 +52,7 @@ export default function AdminPanel() {
     <div className="admin-panel" style={{ maxWidth: '600px', margin: '2em auto' }}>
       <h2>🛠️ Panel administratora</h2>
 
+      {/* formularz dodawania szablonu */}
       <form onSubmit={handleAdd} className="admin-form">
         <input
             type="text"
@@ -61,11 +65,12 @@ export default function AdminPanel() {
         <div style={{ textAlign: 'center', marginTop: '0.7em' }}>
             <button type="submit" className="admin-add-button">Dodaj</button>
         </div>
-    </form>
+      </form>
 
-
+      {/* komunikat o błędzie */}
       {err && <div className="error">{err}</div>}
 
+      {/* lista szablonów */}
       <ul>
         {templates.map(t => (
           <li key={t._id} style={{ marginBottom: '0.5em' }}>

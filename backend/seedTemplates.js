@@ -1,8 +1,10 @@
 const mongoose = require('mongoose');
 const TaskTemplate = require('./models/TaskTemplate');
 require('dotenv').config();
+
 console.log('Connecting to:', process.env.MONGO_URI);
 
+// przykładowe szablony zadań
 const templates = [
   { title: 'Zrób zakupy' },
   { title: 'Umyj naczynia' },
@@ -25,11 +27,12 @@ const templates = [
   { title: 'Zamów jedzenie na weekend' }
 ];
 
+// połącz z bazą i dodaj dane
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(async () => {
-    await TaskTemplate.deleteMany({});
-    await TaskTemplate.insertMany(templates);
+    await TaskTemplate.deleteMany({});       // wyczyść kolekcję
+    await TaskTemplate.insertMany(templates); // dodaj nowe szablony
     console.log('Szablony zadań zostały dodane!');
-    mongoose.disconnect();
+    mongoose.disconnect();                   // rozłącz z bazą
   })
   .catch(err => console.error('Błąd połączenia z MongoDB', err));

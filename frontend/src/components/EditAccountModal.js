@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 
 export default function EditAccountModal({ user, token, onClose, onUpdate, onDelete }) {
-  const [login, setLogin] = useState(user.username || "");
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [error, setError] = useState("");
-  const [mode, setMode] = useState("edit"); // edit | changed | deleted | confirmDelete
-  const [loading, setLoading] = useState(false);
+  const [login, setLogin] = useState(user.username || ""); // nowy login
+  const [currentPassword, setCurrentPassword] = useState(""); // stare hasło
+  const [newPassword, setNewPassword] = useState(""); // nowe hasło
+  const [error, setError] = useState(""); // komunikat błędu
+  const [mode, setMode] = useState("edit"); // tryb działania
+  const [loading, setLoading] = useState(false); // czy trwa operacja
 
+  // obsługa edycji konta
   const handleEdit = async e => {
     e.preventDefault();
     setError("");
@@ -23,16 +24,19 @@ export default function EditAccountModal({ user, token, onClose, onUpdate, onDel
     setLoading(false);
   };
 
+  // przejście do potwierdzenia usunięcia
   const handleDelete = async () => {
     setMode("confirmDelete");
   };
 
+  // potwierdzenie hasła i usunięcie konta
   const reallyDelete = async () => {
     setError("");
     if (!window.confirm("Czy na pewno chcesz usunąć swoje konto? Tej operacji nie można cofnąć!")) return;
     setLoading(true);
     try {
-      await onDelete({ currentPassword }); setCurrentPassword("");
+      await onDelete({ currentPassword });
+      setCurrentPassword("");
       setMode("deleted");
     } catch (err) {
       setError(err.response?.data?.message || err.message || "Błąd usuwania konta");
@@ -40,6 +44,7 @@ export default function EditAccountModal({ user, token, onClose, onUpdate, onDel
     setLoading(false);
   };
 
+  // potwierdzenie zmiany danych
   if (mode === "changed") return (
     <div className="edit-modal-bg">
       <div className="edit-modal">
@@ -50,7 +55,8 @@ export default function EditAccountModal({ user, token, onClose, onUpdate, onDel
       </div>
     </div>
   );
-  
+
+  // potwierdzenie chęci usunięcia
   if (mode === "confirmDelete") return (
     <div className="edit-modal-bg">
       <div className="edit-modal">
@@ -63,12 +69,18 @@ export default function EditAccountModal({ user, token, onClose, onUpdate, onDel
     </div>
   );
 
+  // podanie hasła do usunięcia
   if (mode === "deletePassword") return (
     <div className="edit-modal-bg">
       <div className="edit-modal">
         <button className="close-btn-modal" onClick={onClose} title="Zamknij">×</button>
         <h3>Podaj hasło aby usunąć konto</h3>
-        <input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} placeholder="Obecne hasło" />
+        <input
+          type="password"
+          value={currentPassword}
+          onChange={e => setCurrentPassword(e.target.value)}
+          placeholder="Obecne hasło"
+        />
         {error && <div className="error">{error}</div>}
         <button className="danger-btn" onClick={reallyDelete} disabled={loading}>Usuń konto</button>
         <button style={{marginTop:"0.6em"}} onClick={onClose}>Anuluj</button>
@@ -76,6 +88,7 @@ export default function EditAccountModal({ user, token, onClose, onUpdate, onDel
     </div>
   );
 
+  // konto usunięte
   if (mode === "deleted") return (
     <div className="edit-modal-bg">
       <div className="edit-modal">
@@ -87,6 +100,7 @@ export default function EditAccountModal({ user, token, onClose, onUpdate, onDel
     </div>
   );
 
+  // domyślny widok edycji konta
   return (
     <div className="edit-modal-bg" onClick={e => { if (e.target.className === "edit-modal-bg") onClose(); }}>
       <div className="edit-modal">
@@ -95,13 +109,27 @@ export default function EditAccountModal({ user, token, onClose, onUpdate, onDel
         <form onSubmit={handleEdit}>
           <label>Login:</label>
           <input type="text" value={login} onChange={e => setLogin(e.target.value)} />
+
           <label>Nowe hasło (opcjonalnie):</label>
-          <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Zostaw puste jeśli nie zmieniasz" />
+          <input
+            type="password"
+            value={newPassword}
+            onChange={e => setNewPassword(e.target.value)}
+            placeholder="Zostaw puste jeśli nie zmieniasz"
+          />
+
           <label>Obecne hasło (wymagane):</label>
-          <input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required />
+          <input
+            type="password"
+            value={currentPassword}
+            onChange={e => setCurrentPassword(e.target.value)}
+            required
+          />
+
           {error && <div className="error">{error}</div>}
           <button type="submit" disabled={loading}>Zapisz zmiany</button>
         </form>
+
         <button className="danger-btn" onClick={handleDelete} disabled={loading}>
           Usuń konto
         </button>

@@ -50,8 +50,6 @@ function App() {
   // Obsługa aktualizacji użytkownika z żądaniem do backendu
   const handleUpdate = async ({ login, currentPassword, newPassword }) => {
     await api.updateAccount(token, { login, currentPassword, newPassword });
-    // odśwież token po zmianie loginu/hasła - zakładamy, że backend go zwraca
-    // Możesz po udanej zmianie zrobić relogowanie:
     const res = await api.login(login, newPassword ? newPassword : currentPassword);
     localStorage.setItem('token', res.data.token);
     setToken(res.data.token);
@@ -84,7 +82,7 @@ function App() {
               user={user}
               onEditAccount={onEditAccount}
             />
-            {/* 🛠️ Panel admina widoczny tylko dla użytkownika 'admin' */}
+            {/* Panel admina widoczny tylko dla użytkownika 'admin' */}
             {user.username === 'admin' && <AdminPanel />}
           </>
       }

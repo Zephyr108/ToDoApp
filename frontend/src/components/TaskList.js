@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import CalendarView from './CalendarView';
 
+// aktualna data w formacie do <input type="datetime-local" />
 function getLocalISOStringNow() {
   const now = new Date();
-  now.setSeconds(0, 0); // zeruj sekundy i milisekundy
+  now.setSeconds(0, 0); // zeruj sekundy i ms
   const offset = now.getTimezoneOffset();
   const local = new Date(now.getTime() - offset * 60000);
   return local.toISOString().slice(0, 16);
@@ -23,6 +24,7 @@ export default function TaskList({ api, token, onLogout }) {
     done: true
   });
 
+  // pobierz zadania
   const load = async () => {
     try {
       const res = await api.getTasks(token);
@@ -32,6 +34,7 @@ export default function TaskList({ api, token, onLogout }) {
     }
   };
 
+  // pobierz szablony zadań
   useEffect(() => {
     fetch('http://localhost:5000/api/tasks/templates')
       .then(res => res.json())
@@ -39,8 +42,10 @@ export default function TaskList({ api, token, onLogout }) {
       .catch(() => setErr('Błąd ładowania szablonów'));
   }, []);
 
+  // pobierz zadania przy starcie
   useEffect(() => { load(); }, []);
 
+  // dodaj nowe zadanie
   const addTask = async e => {
     e.preventDefault();
     setErr('');
@@ -55,6 +60,7 @@ export default function TaskList({ api, token, onLogout }) {
     }
   };
 
+  // zmień status zadania (zrobione/niezrobione)
   const toggle = async t => {
     try {
       await api.updateTask(token, t._id, { done: !t.done, title: t.title });
@@ -64,6 +70,7 @@ export default function TaskList({ api, token, onLogout }) {
     }
   };
 
+  // usuń wszystkie zrobione zadania
   const deleteAllDone = async () => {
     const doneTasks = tasks.filter(t => t.done);
     try {
@@ -82,6 +89,8 @@ export default function TaskList({ api, token, onLogout }) {
   return (
     <div className="tasklist">
       <h2>Twoje zadania</h2>
+
+      {/* formularz dodawania zadania */}
       <form onSubmit={addTask}>
         <div className="task-input-group">
           <input
@@ -115,6 +124,7 @@ export default function TaskList({ api, token, onLogout }) {
         </button>
       </form>
 
+      {/* usuń wykonane zadania */}
       <button
         className="del-btn"
         style={{
@@ -129,6 +139,7 @@ export default function TaskList({ api, token, onLogout }) {
         🗑️ Usuń wszystkie wykonane
       </button>
 
+      {/* pokaż/ukryj kalendarz */}
       <button
         className="calendar-toggle"
         onClick={() => setShowCalendar(prev => !prev)}
@@ -149,7 +160,7 @@ export default function TaskList({ api, token, onLogout }) {
         {showCalendar ? 'Ukryj kalendarz' : '📅 Pokaż kalendarz'}
       </button>
 
-
+      {/* sortowanie */}
       <div className="sort-buttons">
         <button
           className={`sort-btn ${sortMode === 'deadline' ? 'active' : ''}`}
@@ -180,8 +191,10 @@ export default function TaskList({ api, token, onLogout }) {
         </button>
       </div>
 
+      {/* błąd */}
       {err && <div className="error">{err}</div>}
 
+      {/* kalendarz */}
       {showCalendar && <CalendarView tasks={tasks} />}
 
       <h3 style={{
@@ -193,6 +206,7 @@ export default function TaskList({ api, token, onLogout }) {
         📝 Lista zadań
       </h3>
 
+      {/* lista zadań */}
       {tasks.length === 0 ? (
         <div style={{
           textAlign: 'center',
@@ -205,92 +219,94 @@ export default function TaskList({ api, token, onLogout }) {
         </div>
       ) : (
         <ul>
-        {[...tasks]
-          .sort((a, b) => {
-            const asc = sortOrder[sortMode];
-            if (sortMode === 'deadline') {
-              if (!a.deadline) return 1;
-              if (!b.deadline) return -1;
-              return asc
-                ? new Date(a.deadline) - new Date(b.deadline)
-                : new Date(b.deadline) - new Date(a.deadline);
-            }
-            if (sortMode === 'name') {
-              return asc
-                ? a.title.localeCompare(b.title)
-                : b.title.localeCompare(a.title);
-            }
-            if (sortMode === 'done') {
-              return asc
-                ? Number(a.done) - Number(b.done)
-                : Number(b.done) - Number(a.done);
-            }
-            return 0;
+          {[...tasks]
+            .sort((a, b) => {
+              const asc = sortOrder[sortMode];
+              if (sortMode === 'deadline') {
+                if (!a.deadline) return 1;
+                if (!b.deadline) return -1;
+                return asc
+                  ? new Date(a.deadline) - new Date(b.deadline)
+                  : new Date(b.deadline) - new Date(a.deadline);
+              }
+              if (sortMode === 'name') {
+                return asc
+                  ? a.title.localeCompare(b.title)
+                  : b.title.localeCompare(a.title);
+              }
+              if (sortMode === 'done') {
+                return asc
+                  ? Number(a.done) - Number(b.done)
+                  : Number(b.done) - Number(a.done);
+              }
+              return 0;
             })
-          .map(t =>
-            <li key={t._id}>
-              <div className="task-item" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-                <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                  <input
-                    type="checkbox"
-                    checked={t.done}
-                    onChange={() => toggle(t)}
-                  />
-                  <span
-                    style={{
-                      textDecoration: t.done ? 'line-through' : '',
-                      marginLeft: '0.65em',
-                      fontWeight: 500,
-                      fontSize: '1.03em',
-                      color: t.done ? '#888' : '#222'
-                    }}
-                  >
-                    {t.title}
-                  </span>
-                  <span
-                    role="status"
-                    className={t.done ? "done" : "notdone"}
-                    style={{ marginLeft: 'auto' }}
-                  >
-                    {t.done ? "✓ wykonane" : "✗ do zrobienia"}
-                  </span>
-                </div>
-                {t.deadline && (() => {
-                  const deadlineDate = new Date(t.deadline);
-                  const now = new Date();
-                  const timeDiff = deadlineDate - now;
-                  const hoursLeft = timeDiff / (1000 * 60 * 60);
-
-                  let color = '#777';
-                  let fontWeight = 'normal';
-
-                  if (deadlineDate < now) {
-                    color = '#e63946'; // czerwony
-                    fontWeight = '600';
-                  } else if (hoursLeft <= 24) {
-                    color = '#e76f51'; // pomarańczowy
-                    fontWeight = '600';
-                  }
-
-                  return (
-                    <div
+            .map(t =>
+              <li key={t._id}>
+                <div className="task-item" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                    <input
+                      type="checkbox"
+                      checked={t.done}
+                      onChange={() => toggle(t)}
+                    />
+                    <span
                       style={{
-                        fontSize: '0.9em',
-                        marginTop: '0.3em',
-                        marginLeft: '1.85em',
-                        color,
-                        fontWeight
+                        textDecoration: t.done ? 'line-through' : '',
+                        marginLeft: '0.65em',
+                        fontWeight: 500,
+                        fontSize: '1.03em',
+                        color: t.done ? '#888' : '#222'
                       }}
                     >
-                      Termin: {deadlineDate.toLocaleString()}
-                    </div>
-                  );
-                })()}
-              </div>
-            </li>
-          )}
-      </ul>
-      )}    
+                      {t.title}
+                    </span>
+                    <span
+                      role="status"
+                      className={t.done ? "done" : "notdone"}
+                      style={{ marginLeft: 'auto' }}
+                    >
+                      {t.done ? "✓ wykonane" : "✗ do zrobienia"}
+                    </span>
+                  </div>
+
+                  {/* pokazanie terminu */}
+                  {t.deadline && (() => {
+                    const deadlineDate = new Date(t.deadline);
+                    const now = new Date();
+                    const timeDiff = deadlineDate - now;
+                    const hoursLeft = timeDiff / (1000 * 60 * 60);
+
+                    let color = '#777';
+                    let fontWeight = 'normal';
+
+                    if (deadlineDate < now) {
+                      color = '#e63946'; // przeterminowane
+                      fontWeight = '600';
+                    } else if (hoursLeft <= 24) {
+                      color = '#e76f51'; // bliski termin
+                      fontWeight = '600';
+                    }
+
+                    return (
+                      <div
+                        style={{
+                          fontSize: '0.9em',
+                          marginTop: '0.3em',
+                          marginLeft: '1.85em',
+                          color,
+                          fontWeight
+                        }}
+                      >
+                        Termin: {deadlineDate.toLocaleString()}
+                      </div>
+                    );
+                  })()}
+                </div>
+              </li>
+            )}
+        </ul>
+      )}
     </div>
   );
 }
