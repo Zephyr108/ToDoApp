@@ -44,6 +44,21 @@ ToDo App to stylowa aplikacja webowa, która umożliwia użytkownikom tworzenie,
 
 ## 🚀 Instalacja i uruchomienie
 
+### 🛠 Główny folder
+
+```bash
+npm install concurrently --save-dev
+(dodać do scripts:
+    "start": "npm run dev",
+    "dev": "concurrently \"npm --prefix backend start\" \"npm --prefix frontend start\"",
+    "backend": "npm --prefix backend start",
+    "frontend": "npm --prefix frontend start")
+npm start (cały projekt)
+npm run backend (tylko backend)
+npm run frontend (tylko frontend)
+```
+---
+
 ### 🛠 Backend
 
 ```bash
