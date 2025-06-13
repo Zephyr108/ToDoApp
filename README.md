@@ -77,7 +77,6 @@ Domyślnie serwer uruchomi się pod adresem: `http://localhost:5000`
 ```bash
 cd frontend
 npm install
-npm install react-calendar
 npm start
 ```
 
@@ -106,7 +105,6 @@ Frontend będzie dostępny pod adresem: `http://localhost:3000`
 2. 🔓 Zaloguj się (otrzymasz token JWT)
 3. 🗒️ Zarządzaj swoimi zadaniami:
    - dodawaj ✍️
-   - edytuj ✏️
    - usuwaj ❌
 
 ---
@@ -125,6 +123,6 @@ Frontend będzie dostępny pod adresem: `http://localhost:3000`
 
 ## 📄 Licencja
 
-Projekt do celów edukacyjnych – feel free to fork!
+Projekt do celów edukacyjnych. 
 
 ---
