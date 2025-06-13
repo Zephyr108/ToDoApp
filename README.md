@@ -123,6 +123,6 @@ Frontend będzie dostępny pod adresem: `http://localhost:3000`
 
 ## 📄 Licencja
 
-Projekt do celów edukacyjnych. 
+Projekt do celów edukacyjnych – jeżeli chcesz go używać oznacz autora ☺️
 
 ---
